@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -8,6 +8,7 @@ import { AuthorizaitonGuard } from 'src/authorization/authorization.guard';
 import { RolesGuard } from 'src/roles/roles.guard';
 import { Request } from 'express';
 import { OrderProductDto } from './dto/order-product.dto';
+import { GetProductDto } from './dto/get-product.dto';
 
 @Controller('product')
 export class ProductController {
@@ -22,8 +23,8 @@ export class ProductController {
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  findAll(@Query() query: GetProductDto) {
+    return this.productService.findAll(query);
   }
 
   @Get(':id')
@@ -55,5 +56,3 @@ export class ProductController {
     return this.productService.order(orderProductDto, req);
   }
 }
-
-

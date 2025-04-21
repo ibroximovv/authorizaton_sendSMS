@@ -9,10 +9,15 @@ import { MailService } from 'src/mail/mail.service';
 import { totp } from "otplib";
 import { SmsService } from 'src/sms/sms.service';
 import { SenOtpAuthDto } from './dto/send-otp.dto';
+import { JwtService } from '@nestjs/jwt';
+
+totp.options = {
+  step: 300
+}
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(AuthUser.name) private readonly authUser: Model<AuthUser>, private readonly sendSmsToEmail: MailService, private readonly sendSmsToPhone: SmsService){}
+  constructor(@InjectModel(AuthUser.name) private readonly authUser: Model<AuthUser>, private readonly sendSmsToEmail: MailService, private readonly sendSmsToPhone: SmsService, private readonly jwt: JwtService){}
   async findUser(username: string) {
     return await this.authUser.findOne({ username })
   }
@@ -22,6 +27,7 @@ export class AuthService {
       const otp = totp.generate(sendOtpAuthDto.email + 'secret1')
       this.sendSmsToEmail.sendSmsToEmail(sendOtpAuthDto.email, 'Tasdiqlash kodi', 'Iltimos kodni hech kimga bermang', `<h2>${otp}</h2>`)
       // this.sendSmsToPhone.sendSmsToPhone(sendOtpAuthDto.phoneNumber, otp)
+      return { message: 'otp sent'}
     } catch (error) {
       console.log(error);
     }
@@ -61,7 +67,9 @@ export class AuthService {
       }
 
       this.sendSmsToEmail.sendSmsToEmail(updateAuthDto.email, 'new logined', `date: ${new Date()}`)
-      return {message: 'login successfully'}
+      const token = this.jwt.sign({ id: findUser._id, role: findUser.role })
+      
+      return { token }
     } catch (error) {
       throw new InternalServerErrorException('Internal server error')
     }

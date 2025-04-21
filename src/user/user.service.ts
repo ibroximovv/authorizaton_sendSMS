@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuthUser } from 'src/auth/entities/auth.entity';
+import { GetUserDto } from './dto/get-auth.dto';
 
 @Injectable()
 export class UserService {
@@ -30,9 +31,25 @@ export class UserService {
     }
   }
 
-  async findAll() {
+  async findAll(query: GetUserDto) {
     try {
-      return await this.user.find();
+      const { search, page = 1, limit = 10, order = 'desc', column = 'name'} = query;
+      interface IFilterObj {
+        name?: {$regex: string, $options: string},
+        email?: {$regex: string, $options: string}
+      }
+
+      let filter: IFilterObj = {}
+
+      if (column == "name" && search) {
+        filter.name = { $regex: search, $options: 'i' }
+      }
+
+      if (column == "email" && search) {
+        filter.email = { $regex: search, $options: 'i' }
+      }
+
+      return await this.user.find().sort({[column]: order === 'asc' ? 1 : -1 }).limit(limit).skip((page - 1) * limit);
     } catch (error) {
       throw new InternalServerErrorException('Internal server error')
     }

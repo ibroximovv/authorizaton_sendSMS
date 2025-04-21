@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import axios from "axios";
 
 @Injectable()
 export class SmsService {
-    private readonly baseUrl = 'notify.eskiz.uz/api'
+    private readonly baseUrl = 'https://notify.eskiz.uz/api'
     private readonly email = 'ilyosbekibrohimov22@gmail.com'
     private readonly password = 'Qn1RQYVUbG5NhJKS1d8aVWsWnZeu7pI5gpd7uyPn'
     private token: string | null = '';
@@ -19,6 +19,13 @@ export class SmsService {
             this.token = result?.data?.data?.token;
         } catch (error) {
             console.log(error);
+            throw new InternalServerErrorException('Eskiz login failed');
+        }
+    }
+
+    async ensureAuthenticate() {
+        if(!this.token) {
+            this.authenticate()
         }
     }
 
@@ -40,12 +47,6 @@ export class SmsService {
             await this.ensureAuthenticate()
             await this.sendSmsToPhone(phone, message)
             console.log(error);
-        }
-    }
-
-    async ensureAuthenticate() {
-        if(!this.token) {
-            this.authenticate()
         }
     }
 }

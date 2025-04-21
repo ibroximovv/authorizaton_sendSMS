@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -6,6 +6,7 @@ import { RolesDecorator } from 'src/common/role.decorator';
 import { RolesGuard } from 'src/roles/roles.guard';
 import { Role } from 'src/common/role.enum';
 import { AuthorizaitonGuard } from 'src/authorization/authorization.guard';
+import { GetUserDto } from './dto/get-auth.dto';
 
 @Controller('user')
 export class UserController {
@@ -20,8 +21,8 @@ export class UserController {
   }
 
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Query() query: GetUserDto) {
+    return this.userService.findAll(query);
   }
 
   @Get(':id')
